@@ -16,7 +16,7 @@ Meta data values are clickable to find related content.
 
 The block is prepared for Matomo analytics.
 
-![Search @rohberg/volto-searchkit-block](public/search.png)
+![Search @rohberg/volto-searchkit-block](static/search.png)
 
 
 ## Getting started
@@ -37,14 +37,14 @@ config.blocks.blocksConfig.searchkitblock.restricted = true;
 
 and disable the block after adding it to a page of your choice.
 
-The block can be configured by 
+The block can be configured by
 
 - searchable fields with boosting
 - facets
 - restricting types and states
 - results meta data
 
-![Configuration](public/configuration.png)
+![Configuration](static/configuration.png)
 
 
 Enable Matomo tracking via
@@ -85,7 +85,7 @@ Please update the settings according to your deployment: `/controlpanel/volto_se
 
 ## User documentation
 
-The search is a fuzzy search, that means typos are compensated. 
+The search is a fuzzy search, that means typos are compensated.
 Approximate matches and inflections are found.
 
 ### Multiple search strings
@@ -99,10 +99,10 @@ Use wildcards to find matches of words that complement the search string.
 
 For exact matches of a search string embrace it with quotation marks.
 
-A search for a word with hyphen is equivalent to a search for the word and the parts of it.  
+A search for a word with hyphen is equivalent to a search for the word and the parts of it.
 Example: A search for "LSR-Lehrbetrieb" is equivalent to a search for "LSR-Lehrbetrieb LSR Lehrbetrieb"
 
-Words with hyphen are matched by searches for part of the words.  
+Words with hyphen are matched by searches for part of the words.
 Example: "LSR-Lehrbetrieb" is found by a search for "LSR".
 
 
