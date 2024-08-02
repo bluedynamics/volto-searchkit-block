@@ -45,7 +45,8 @@
   "dependencies": {
     "@eeacms/volto-matomo": "*",
     "react-overridable": "^0.0.3",
-    "react-searchkit": "v2.2.0"
+    "react-searchkit": "v2.2.0",
+    "react-portal": "*"
   },
   "devDependencies": {
     "@plone/scripts": "^3.0.0",
