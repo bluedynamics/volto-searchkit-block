@@ -9,6 +9,7 @@ export class CustomESRequestSerializer {
     this.allowed_content_types = config.allowed_content_types;
     this.allowed_review_states = config.allowed_review_states;
     this.search_sections = config.search_sections;
+    this.analyzer = config.analyzer;
   }
   /**
    * Convert Array of filters to Object of filters
@@ -55,183 +56,25 @@ export class CustomESRequestSerializer {
     const bodyParams = {};
     const force_fuzzy = true; // search for `${word}` and `${word}~`
 
-    let qs_tailored_should_notexact = [];
-    let qs_tailored_should_exact = [];
-    let qs_tailored_must_notexact = [];
-    let qs_tailored_must_exact = [];
-    let qs_tailored_mustNot_exact = [];
-
-    const _remove_orphan_leading_or_trailing_quotmarks = (word) => {
-      let word_without_plus_or_minus = trim(word, '+');
-      word_without_plus_or_minus = trim(word_without_plus_or_minus, '-');
-      if (
-        !(
-          word_without_plus_or_minus.startsWith('"') &&
-          word_without_plus_or_minus.endsWith('"')
-        ) &&
-        !(
-          !word_without_plus_or_minus.startsWith('"') &&
-          !word_without_plus_or_minus.endsWith('"')
-        )
-      ) {
-        return word.replace('"', '');
-      }
-      return word;
-    };
-
-    const _removeQuotationMarks = (word) => {
-      word.replace('"', '');
-      word.replace("'", '');
-      return word;
-    };
-
-    const _make_fuzzy_and_enrich_with_word_parts = (word) => {
-      // EXCLUDE
-      if (word.startsWith('-')) {
-        qs_tailored_mustNot_exact.push(_removeQuotationMarks(word.slice(1)));
-        return;
-      }
-      // MUST
-      if (word.startsWith('+')) {
-        if (word.includes('"') || word.includes('*') || word.includes('?')) {
-          qs_tailored_must_exact.push(word.slice(1));
-        } else {
-          qs_tailored_must_notexact.push(word.slice(1));
-        }
-        return;
-      }
-
-      // WILDCARD
-      if (word.includes('*') || word.includes('?')) {
-        qs_tailored_should_exact.push(_removeQuotationMarks(word));
-        return;
-      }
-      // EXACT
-      if (word.includes('"')) {
-        qs_tailored_should_exact.push(word);
-        return;
-      }
-
-      // Words with hyphen
-      let word_new;
-      let wordpartlist = word.split('-'); // common hyphens
-      if (wordpartlist.length > 1) {
-        // word with hyphen
-        let resultlist = [];
-        wordpartlist.push(word);
-        wordpartlist.forEach((el) => {
-          if (force_fuzzy) {
-            resultlist.push(`${el} ${el}~`);
-          } else {
-            resultlist.push(el);
-          }
-        });
-        word_new = resultlist.join(' ');
-      } else {
-        // word without hyphen
-        word_new = force_fuzzy ? `${word} ${word}~` : `${word}`;
-      }
-      qs_tailored_should_notexact.push(word_new);
-      return;
-    };
-
     if (!isEmpty(queryString)) {
-      // - search fuzzy
-      // - search also for word parts (LSR-Lehrbetrieb: search also for LSR and Lehrbetrieb)
-      let words = queryString.trim().split(' ');
-      words = words
-        // filter out spaces, orphan ", "AND", and "OR"
-        .filter((word) => !['', '"', 'AND', 'OR', 'NOT'].includes(word));
-
-      words.forEach((word) => {
-        word = _remove_orphan_leading_or_trailing_quotmarks(word);
-        _make_fuzzy_and_enrich_with_word_parts(word);
-      });
-
-      let searchedFields = [...this.searchedFields];
-      let searchedFields_exact = [...this.searchedFields];
-      searchedFields_exact = searchedFields_exact.map((fld) => {
-        const fieldname = fld.split('^')[0];
-        return fld.replace(fieldname, `${fieldname}.exact`);
-      });
-
       // Construction of query
-      let shouldList = [];
-      let mustList = [];
-      let must_notList = [];
-
-      qs_tailored_should_notexact.forEach((element) => {
-        shouldList.push({
-          query_string: {
-            query: element,
-            fields: searchedFields,
-          },
-        });
-      });
-      qs_tailored_should_exact.forEach((element) => {
-        shouldList.push({
-          query_string: {
-            query: element,
-            fields: searchedFields_exact,
-          },
-        });
-      });
-
-      qs_tailored_must_notexact.forEach((el) => {
-        mustList.push({
-          query_string: {
-            query: el,
-            fields: searchedFields,
-          },
-        });
-      });
-      qs_tailored_must_exact.forEach((element) => {
-        mustList.push({
-          query_string: {
-            query: element,
-            fields: searchedFields_exact,
-          },
-        });
-      });
-      qs_tailored_mustNot_exact.forEach((element) => {
-        must_notList.push({
-          query_string: {
-            query: element,
-            fields: searchedFields_exact,
-          },
-        });
-      });
-
+      // this needs some more flexibility
       bodyParams['query'] = {
-        bool: {
-          should: shouldList,
-          must: mustList,
-          must_not: must_notList,
+        multi_match: {
+          query: queryString,
+          fields: this.searchedFields,
+          analyzer: this.analyzer,
+          operator: 'or',
+          fuzziness: force_fuzzy ? 'AUTO' : 0,
+          prefix_length: 2,
+          type: 'most_fields',
+          minimum_should_match: '75%',
         },
       };
 
       bodyParams['highlight'] = {
         number_of_fragments: 20,
-        fields: [
-          {
-            title: {
-              matched_fields: ['title', 'title.exact'],
-              type: 'fvh',
-            },
-          },
-          {
-            description: {
-              matched_fields: ['description', 'description.exact'],
-              type: 'fvh',
-            },
-          },
-          {
-            blocks_plaintext: {
-              matched_fields: ['blocks_plaintext', 'blocks_plaintext.exact'],
-              type: 'fvh',
-            },
-          },
-        ],
+        fields: [],
       };
     }
 
@@ -302,7 +145,9 @@ export class CustomESRequestSerializer {
     }
 
     /**
-     * ES post_filter
+     * post_filter
+     * to show all options in aggregations, not the possible ones based on the current search
+     * but filter search results based on selected filters
      */
 
     const post_filter = {
@@ -330,9 +175,10 @@ export class CustomESRequestSerializer {
     const filter = (fieldName) => {
       let myAggsFilter = terms;
       // Add selected filters
-      const terms_of_selected_options_without_self = terms_of_selected_options.filter(
-        (el) => !Object.keys(el.terms).includes(fieldName),
-      );
+      const terms_of_selected_options_without_self =
+        terms_of_selected_options.filter(
+          (el) => !Object.keys(el.terms).includes(fieldName),
+        );
       myAggsFilter = myAggsFilter.concat(
         terms_of_selected_options_without_self,
       );

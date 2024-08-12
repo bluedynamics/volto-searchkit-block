@@ -49,12 +49,7 @@ export const SearchBlockSchema = ({ data = {}, intl }) => {
       {
         id: 'default',
         title: 'API',
-        fields: [
-          'elastic_search_api_url',
-          'elastic_search_api_index',
-          'backend_url',
-          'frontend_url',
-        ],
+        fields: ['backend_url', 'frontend_url'],
       },
       {
         id: 'facets',
@@ -84,18 +79,10 @@ export const SearchBlockSchema = ({ data = {}, intl }) => {
       {
         id: 'divers',
         title: 'Divers',
-        fields: ['relocation'],
+        fields: ['analyzer', 'relocation'],
       },
     ],
     properties: {
-      elastic_search_api_url: {
-        title: 'Elastic Search API URL',
-        default: 'http://localhost:9200',
-      },
-      elastic_search_api_index: {
-        title: 'Elastic Search API Index',
-        default: 'esploneindex',
-      },
       backend_url: {
         title: 'Backend URL',
         default: 'http://localhost:8080/Plone',
@@ -171,6 +158,12 @@ export const SearchBlockSchema = ({ data = {}, intl }) => {
         description:
           'Show tags to search for. Let the field empty to not show tags.',
         default: '',
+      },
+      analyzer: {
+        title: 'Analyzer',
+        description:
+          'Query string analyzer for search. Default is "english". Use "german" for german language.',
+        default: 'english',
       },
       relocation: {
         title: 'Relocation',
