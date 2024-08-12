@@ -1,4 +1,4 @@
-import { extend, isEmpty, keyBy, trim } from 'lodash';
+import { extend, isEmpty, keyBy } from 'lodash';
 import { getObjectFromObjectList } from '../helpers.jsx';
 
 export class CustomESRequestSerializer {
@@ -54,7 +54,7 @@ export class CustomESRequestSerializer {
   serialize = (stateQuery) => {
     const { queryString, sortBy, sortOrder, page, size, filters } = stateQuery;
     const bodyParams = {};
-    const force_fuzzy = true; // search for `${word}` and `${word}~`
+    const force_fuzzy = true;
 
     if (!isEmpty(queryString)) {
       // Construction of query
@@ -228,6 +228,7 @@ export class CustomESRequestSerializer {
     aggregations.forEach((fieldName) => {
       let aggName = `${fieldName}_agg`;
       let field = fieldName;
+      // XXX Special case for speciic fields are unfortunately hardcoded, should be more flexible
       if (fieldName === 'Subject') {
         field = 'subjects.keyword';
         aggName = 'subjects_agg';
