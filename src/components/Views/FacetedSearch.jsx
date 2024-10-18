@@ -8,16 +8,20 @@ import { FormattedMessage, useIntl } from 'react-intl';
 import { Portal } from 'react-portal';
 import { OverridableContext } from 'react-overridable';
 
+import svgRight from '@plone/volto/icons/right-key.svg';
+import svgLeft from '@plone/volto/icons/left-key.svg';
+// import { Icon } from '@plone/volto/components';
+
 import {
   Button,
   Container,
   Dropdown,
-  Grid,
+//   Grid,
   Header,
   Icon as IconSemantic,
   Item,
   Label,
-  Pagination as Paginator,
+  Pagination,
   Segment,
 } from 'semantic-ui-react';
 import {
@@ -492,7 +496,6 @@ const CustomBucketAggregationValuesElement = (props) => {
           className={isSelected ? 'isSelected right floated' : 'right floated'}
           key={`${bucket.key}-description`}
         >
-          <Icon name={clearSVG} size="15px" />
         </Item>
       ) : null}
       <Item
@@ -583,54 +586,59 @@ const customPaginationElement = (props) => {
   };
 
   return pages > 1 ? (
-    <Paginator
-      activePage={currentPage}
-      totalPages={pages}
-      onPageChange={_onPageChange}
-      boundaryRange={boundaryRangeCount}
-      siblingRange={siblingRangeCount}
-      ellipsisItem={
-        showEllipsis
-          ? {
-              content: <IconSemantic name="ellipsis horizontal" />,
-              icon: true,
-            }
-          : null
-      }
-      firstItem={
-        showFirst
-          ? {
-              content: <Icon name={firstAngle} size="20px" />,
-              icon: true,
-            }
-          : null
-      }
-      lastItem={
-        showLast
-          ? {
-              content: <Icon name={lastAngle} size="20px" />,
-              icon: true,
-            }
-          : null
-      }
-      prevItem={
-        showPrev
-          ? {
-              content: <Icon name={leftAngle} size="20px" />,
-              icon: true,
-            }
-          : null
-      }
-      nextItem={
-        showNext
-          ? {
-              content: <Icon name={rightAngle} size="20px" />,
-              icon: true,
-            }
-          : null
-      }
-      size={size}
-    />
+    <div className="pagination-wrapper-bottom">
+      <Pagination
+        className="desktop-pagination"
+        activePage={currentPage}
+        totalPages={pages}
+        onPageChange={_onPageChange}
+        boundaryRange={boundaryRangeCount}
+        siblingRange={siblingRangeCount}
+        firstItem={null}
+        lastItem={null}
+        prevItem={{
+          content: (
+            <Icon name={svgLeft} size="16px" />
+          ),
+          icon: false,
+          'aria-disabled': !showPrev,
+          className: !showPrev ? 'disabled' : null,
+        }}
+        nextItem={{
+          content: (
+            <Icon name={svgRight} size="16px" />
+          ),
+          icon: false,
+          'aria-disabled': !showNext,
+          className: !showNext ? 'disabled' : null,
+      }} />
+      <Pagination
+        className="mobile-pagination"
+        activePage={currentPage}
+        totalPages={pages}
+        onPageChange={_onPageChange}
+        boundaryRange={boundaryRangeCount}
+        siblingRange={siblingRangeCount}
+        firstItem={null}
+        lastItem={null}
+        prevItem={{
+            content: (
+              <Icon name={svgLeft} size="16px" />
+            ),
+            icon: false,
+            'aria-disabled': !showPrev,
+            className: !showPrev ? 'disabled' : null,
+          }}
+          nextItem={{
+            content: (
+              <Icon name={svgRight} size="16px" />
+            ),
+            icon: false,
+            'aria-disabled': !showNext,
+            className: !showNext ? 'disabled' : null,
+        }}
+      />
+    </div>
   ) : null;
 };
 
@@ -738,59 +746,44 @@ const FacetedSearch = ({ data, overriddenComponents }) => {
                     document.querySelectorAll(relocation)[0]
                   }
                 >
-                  <SearchBarSection />
+                  <div className="kitsearch-header-wrapper">
+                    <SearchBarSection />
+                    <div className="bucketaggregations">
+                        {Object.keys(facet_fields_object)?.map((facet) => (
+                          <BucketAggregation
+                            key={facet}
+                            title={facet_fields_object[facet]}
+                            agg={{
+                              field: facet,
+                              aggName: `${facet}_agg`,
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
                 </Portal>
               ) : (
-                <Grid relaxed style={{ padding: '1em 0' }}>
-                  <Grid.Row>
-                    <Grid.Column width={12}>
-                      <SearchBarSection />
-                    </Grid.Column>
-                  </Grid.Row>
-                </Grid>
+                <div className="kitsearch-header-wrapper">
+                  <SearchBarSection />
+                  <div className="bucketaggregations">
+                    {Object.keys(facet_fields_object)?.map((facet) => (
+                      <BucketAggregation
+                        key={facet}
+                        title={facet_fields_object[facet]}
+                        agg={{
+                          field: facet,
+                          aggName: `${facet}_agg`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
               )}
-
-              <Grid relaxed style={{ padding: '1em 0' }}>
-                <Grid.Row className={'facetedsearch_sections ' + filterLayout}>
-                  <Grid.Column width={12}>
-                    <SectionsSearch
-                      search_sections={search_sections}
-                      allow_search_excluded_sections={
-                        allow_search_excluded_sections
-                      }
-                      show_filter_for_excluded_sections={
-                        show_filter_for_excluded_sections
-                      }
-                    />
-                  </Grid.Column>
-                </Grid.Row>
-                <Grid.Row className={'facetedsearch_filter ' + filterLayout}>
-                  <Grid.Column width={12}>
-                    <div className="bucketaggregations">
-                      {Object.keys(facet_fields_object)?.map((facet) => (
-                        <BucketAggregation
-                          key={facet}
-                          title={facet_fields_object[facet]}
-                          agg={{
-                            field: facet,
-                            aggName: `${facet}_agg`,
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </Grid.Column>
-                </Grid.Row>
-                <Grid.Row>
-                  <Grid.Column width={12}>
-                    <ResultsLoader>
-                      <ErrorCp />
-                      <EmptyResults />
-                      <OnResults sortValues={sortValues} />
-                    </ResultsLoader>
-                    {/* <StateLogger /> */}
-                  </Grid.Column>
-                </Grid.Row>
-              </Grid>
+              <ResultsLoader>
+                <ErrorCp />
+                <EmptyResults />
+                <OnResults sortValues={sortValues} />
+              </ResultsLoader>
             </Container>
           </ReactSearchKit>
         </OverridableContext.Provider>

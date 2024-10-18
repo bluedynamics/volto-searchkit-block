@@ -18,10 +18,6 @@ const _SearchBarSection = (props) => {
     },
   };
 
-  const onResetHandler = (event) => {
-    onQueryChanged(payloadOfReset);
-  };
-
   return (
     <div className="searchbar-wrapper">
       <SearchBar
@@ -34,15 +30,6 @@ const _SearchBarSection = (props) => {
         actionProps={{
           content: intl.formatMessage(messages.search),
         }}
-      />
-      <IconSemantic
-        basic="true"
-        icon="true"
-        name="delete"
-        className={
-          props.currentQueryState.queryString.length ? 'selected' : 'unselected'
-        }
-        onClick={(event) => onResetHandler(event)}
       />
     </div>
   );

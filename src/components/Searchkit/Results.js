@@ -46,25 +46,15 @@ class Results extends Component {
     const { total } = this.props.currentResultsState.data;
     return total ? (
       <div className="fnresults">
-        <Grid>
-          <Grid.Column width={4}>
             <Count />
-          </Grid.Column>
-          <Grid.Column width={6}>
             <Sort
               className="sortdropdown"
               values={this.props.sortValues}
               label={(cmp) => <> {cmp}</>}
               overridableId="volto"
             />
-          </Grid.Column>
-        </Grid>
-        <Grid style={{ padding: '2em 0' }}>
           <ResultsMultiLayout overridableId="elasticsearch" />
-        </Grid>
-        <Grid verticalAlign="middle" textAlign="center">
           <Pagination options={{ size: 'small' }} />
-        </Grid>
       </div>
     ) : null;
   }
